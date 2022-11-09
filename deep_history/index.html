@@ -1,0 +1,129 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Deep-history Dashboard</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/dist/darkly/bootstrap.min.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row context-view">
+            <div class="col-sm-6">
+                <div class="card mt-4">
+                    <div class="card-header">Context</div>
+                    <div class="card-body">
+                        <form>
+                            <div class="row">
+                                <div class="form-group col-sm-12">
+                                    <label class="col-form-label">Network</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="network" value="devnet">
+                                        <label class="form-check-label">
+                                            Devnet
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="network" value="mainnet">
+                                        <label class="form-check-label">
+                                            Mainnet
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="form-group col-sm-12">
+                                    <label class="col-form-label">Account address</label>
+                                    <input type="input" class="form-control" name="accountAddress">
+                                </div>
+
+                                <div class="form-group col-sm-12">
+                                    <label class="col-form-label">Date and time</label>
+                                    <input type="datetime-local" class="form-control" name="dateTime">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card bg-primary mt-4">
+                    <div class="card-header bg-primary">Queries</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="card mt-2">
+                                    <div class="card-body">
+                                        <form>
+                                            <button class="btn btn-info btn-block">Get native state</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-12">
+                                <div class="card mt-2">
+                                    <div class="card-body">
+                                        <form>
+                                            <div class="form-group">
+                                                <label class="col-form-label">Token identifier</label>
+                                                <input type="input" class="form-control" name="tokenIdentifier">
+                                            </div>
+
+                                            <button class="btn btn-info btn-block">Get token state</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-12">
+                                <div class="card mt-2">
+                                    <div class="card-body">
+                                        <form>
+                                            <button class="btn btn-info btn-block">Get key / value pairs</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-12">
+                                <div class="card mt-2">
+                                    <div class="card-body">
+                                        <form>
+                                            <div class="form-group">
+                                                <label class="col-form-label">State key</label>
+                                                <input type="input" class="form-control" name="stateKey">
+                                            </div>
+
+                                            <button class="btn btn-info btn-block">Get key / value pair</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6">
+
+            </div>
+
+            <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+                integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+                crossorigin="anonymous"></script>
+            <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+                integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+                crossorigin="anonymous"></script>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js"
+                integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+                crossorigin="anonymous"></script>
+
+            <script src="/static/lib.js"></script>
+            <script src="/static/app.js"></script>
+
+            <script>
+                $(async function () {
+                    const application = new Application();
+                    await application.main();
+                });
+            </script>
+</body>
+
+</html>
