@@ -74,19 +74,24 @@ class QueriesView {
     setupEvents() {
         onEvent("contextSaved", this.render.bind(this));
 
-        this.element.find(".query button").on("click", this.onRunQueryClicked.bind(this));
+        this.element.find("form.query").on("submit", this.onSubmitQuery.bind(this));
     }
 
-    async onRunQueryClicked(event) {
-        const queryElement = $(event.target).parent();
-        const url = this.buildUrl(queryElement);
+    async onSubmitQuery(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const form = $(event.target);
+        const url = this.buildUrl(form);
         this.awaitResponse();
         const response = await this.model.runQuery(url);
         this.renderResponse(response);
+
+        return false;
     }
 
-    buildUrl(queryElement) {
-        const urlElements = queryElement.find(".part");
+    buildUrl(form) {
+        const urlElements = form.find(".part");
         const urlParts = urlElements.map(function () {
             return $(this).text() || $(this).val();
         });
@@ -112,7 +117,6 @@ class QueriesView {
         this.element.find(".response").html(`<pre>${responseJson}</pre>`);
     }
 }
-
 
 class QueriesModel {
     async runQuery(url) {

@@ -1,18 +1,14 @@
-from functools import lru_cache
-
-from deep_history.config import ENVIRONMENTS, Environment
 from deep_history.network_provider import CustomNetworkProvider
 
 
 class Services:
-    def __init__(self) -> None:
-        pass
+    def __init__(self, mainnet_url: str, devnet_url: str) -> None:
+        self.mainnet_network_provider = CustomNetworkProvider(mainnet_url)
+        self.devnet_network_provider = CustomNetworkProvider(devnet_url)
 
-    @lru_cache()
     def get_network_provider(self, network: str):
-        environment = self.get_environment(network)
-        network_provider = CustomNetworkProvider(environment.network_provider_url)
-        return network_provider
-
-    def get_environment(self, network: str) -> Environment:
-        return ENVIRONMENTS[network]
+        if network == "mainnet":
+            return self.mainnet_network_provider
+        elif network == "devnet":
+            return self.devnet_network_provider
+        raise Exception(f"unknown network: {network}")
