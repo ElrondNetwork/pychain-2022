@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  deep-history-dashboard:
+    ulimits:
+      nproc: 65535
+    user: ${DOCKER_USER}
+    tty: true
+    image: deep-history-dashboard:latest
+    container_name: deep-history-dashboard
+    working_dir: "/app"
+    ports:
+      - "30000:8080"
+    networks:
+      deep-history-dashboard:
+    restart: always
+    environment:
+      - PYTHONPATH=/app
+      - MAINNET_GATEWAY=http://r620:8080
+      - DEVNET_GATEWAY=http://r620:9090
+    entrypoint:
+      [
+        "gunicorn",
+        "--workers=4",
+        "--bind=0.0.0.0:8080",
+        "deep_history.app:app",
+        "--capture-output",
+        "--access-logfile", "-",
+        "--error-logfile", "-"
+      ]
+
+networks:
+  deep-history-dashboard:
+    name: "deep-history-dashboard"
+    ipam:
+      config:
+        - subnet: 30.0.0.0/24
