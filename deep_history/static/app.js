@@ -80,6 +80,7 @@ class QueriesView {
     async onRunQueryClicked(event) {
         const queryElement = $(event.target).parent();
         const url = this.buildUrl(queryElement);
+        this.awaitResponse();
         const response = await this.model.runQuery(url);
         this.renderResponse(response);
     }
@@ -102,9 +103,13 @@ class QueriesView {
         this.element.find(".part.network").text(data.network);
     };
 
+    awaitResponse() {
+        this.element.find(".response").html(`<div class="spinner-border"></div>`);
+    }
+
     renderResponse(response) {
         const responseJson = JSON.stringify(response, null, 4);
-        this.element.find(".response").html(responseJson);
+        this.element.find(".response").html(`<pre>${responseJson}</pre>`);
     }
 }
 
