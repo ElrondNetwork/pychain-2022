@@ -10,7 +10,7 @@ python3 -m venv ~/pychain-deep-history
 source ~/pychain-deep-history/bin/activate
 export PYTHONPATH=""
 pip install pip -U
-pip install -r ./deep_history/requirements.txt
+pip install -r ./deep_history/requirements.txt --upgrade
 ```
 
 ```
