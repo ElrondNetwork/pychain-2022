@@ -1,5 +1,4 @@
 import datetime
-import json
 import os
 from pathlib import Path
 from typing import Any
@@ -19,15 +18,18 @@ class RequestError(Exception):
         super().__init__(message)
 
 
-class MyBottle(Bottle):
-    def default_error_handler(self, res: Any):
-        response.content_type = "application/json"
+def handle_error(func: Any):
+    def wrapper(*args: Any, **kwargs: Any):
+        try:
+            return func(*args, **kwargs)
+        except RequestError as err:
+            return dict(error=str(err), status_code=400)
+        except GenericError as err:
+            return dict(error=str(err), status_code=500)
+        except Exception as err:
+            return dict(error=str(err), status_code=500)
 
-        if isinstance(res.exception, RequestError):
-            return json.dumps(dict(error=str(res.exception), status_code=400))
-        elif isinstance(res.exception, GenericError):
-            return json.dumps(dict(error=str(res.exception), status_code=500))
-        return json.dumps(dict(error=str(res.exception), status_code=res.status_code))
+    return wrapper
 
 
 services = Services(
@@ -35,7 +37,7 @@ services = Services(
     os.environ.get("DEVNET_GATEWAY", "")
 )
 
-app: Any = MyBottle()
+app: Any = Bottle()
 
 
 @app.route('/')
@@ -49,6 +51,7 @@ def send_static(filename: Path):
 
 
 @app.route("/api/<network>/accounts/<address>/native")
+@handle_error
 def get_native_state(network: str, address: str):
     time, block_nonce = parse_query_parameters()
     provider = services.get_network_provider(network)
@@ -57,6 +60,7 @@ def get_native_state(network: str, address: str):
 
 
 @app.route("/api/<network>/accounts/<address>/token/<token>")
+@handle_error
 def get_token_state(network: str, address: str, token: str):
     time, block_nonce = parse_query_parameters()
     provider = services.get_network_provider(network)
@@ -65,6 +69,7 @@ def get_token_state(network: str, address: str, token: str):
 
 
 @app.route("/api/<network>/accounts/<address>/pairs")
+@handle_error
 def get_pairs(network: str, address: str):
     time, block_nonce = parse_query_parameters()
     provider = services.get_network_provider(network)
@@ -73,6 +78,7 @@ def get_pairs(network: str, address: str):
 
 
 @app.route("/api/<network>/accounts/<address>/pairs/<key>")
+@handle_error
 def get_pair(network: str, address: str, key: str):
     time, block_nonce = parse_query_parameters()
     provider = services.get_network_provider(network)

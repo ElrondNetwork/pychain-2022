@@ -28,9 +28,3 @@ class GenericResponse:
     
 
 
-class GenericError(Exception):
-    def __init__(self, url: str, data: Any) -> None:
-        ...
-    
-
-
