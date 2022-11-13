@@ -42,12 +42,6 @@ def main(cli_args: List[str]):
     else:
         parsed_args.func(parsed_args)
 
-    key = nacl.utils.random(nacl.secret.SecretBox.KEY_SIZE)
-    box = nacl.secret.SecretBox(key)
-    encrypted = box.encrypt(b"important secret")
-    plaintext = box.decrypt(encrypted)
-    print(plaintext)
-
 
 def init(args: Any):
     path_of_wallet = Path("wallet.pem")
