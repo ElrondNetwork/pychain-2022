@@ -1,0 +1,4 @@
+pynacl==1.5.0
+git+https://git@github.com/ElrondNetwork/sdk-erdpy-eggs-core.git@init#egg=erdpy_core
+git+https://git@github.com/ElrondNetwork/sdk-erdpy-eggs-network-providers.git@init#egg=erdpy_network
+git+https://git@github.com/ElrondNetwork/sdk-erdpy-eggs-wallet.git@init#egg=erdpy_wallet

@@ -13,7 +13,7 @@ class CustomNetworkProvider(ProxyNetworkProvider):
         super().__init__(url)
 
     @lru_cache(maxsize=1024)
-    def get_native_state_of_account(self, address: str, time: Union[datetime.datetime, None], block_nonce: Union[int, None]):
+    def get_native_balance(self, address: str, time: Union[datetime.datetime, None], block_nonce: Union[int, None]):
         block_nonce = self.decide_block_nonce(address, time, block_nonce)
         block_nonce_query_part = "" if not block_nonce else f"blockNonce={block_nonce}"
         url = f"address/{address}?{block_nonce_query_part}"
@@ -21,21 +21,21 @@ class CustomNetworkProvider(ProxyNetworkProvider):
         return response
 
     @lru_cache(maxsize=1024)
-    def get_token_state_of_account(self, address: str, token: str, time: Union[datetime.datetime, None], block_nonce: Union[int, None]):
+    def get_token_balance(self, address: str, token: str, time: Union[datetime.datetime, None], block_nonce: Union[int, None]):
         block_nonce = self.decide_block_nonce(address, time, block_nonce)
         block_nonce_query_part = "" if not block_nonce else f"blockNonce={block_nonce}"
         response = self.do_get(f"address/{address}/esdt/{token}?{block_nonce_query_part}")
         return response
 
     @lru_cache(maxsize=1024)
-    def get_pairs_of_account(self, address: str, time: Union[datetime.datetime, None], block_nonce: Union[int, None]):
+    def get_whole_storage(self, address: str, time: Union[datetime.datetime, None], block_nonce: Union[int, None]):
         block_nonce = self.decide_block_nonce(address, time, block_nonce)
         block_nonce_query_part = "" if not block_nonce else f"blockNonce={block_nonce}"
         response = self.do_get(f"address/{address}/keys?{block_nonce_query_part}")
         return response
 
     @lru_cache(maxsize=1024)
-    def get_pair_of_account(self, address: str, key: str, time: Union[datetime.datetime, None], block_nonce: Union[int, None]):
+    def get_storage_entry(self, address: str, key: str, time: Union[datetime.datetime, None], block_nonce: Union[int, None]):
         block_nonce = self.decide_block_nonce(address, time, block_nonce)
         block_nonce_query_part = "" if not block_nonce else f"blockNonce={block_nonce}"
         response = self.do_get(f"address/{address}/key/{key}?{block_nonce_query_part}")

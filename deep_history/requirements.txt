@@ -1,4 +1,0 @@
-bottle
-gunicorn
-git+https://git@github.com/ElrondNetwork/elrond-sdk-erdpy-eggs.git@init#egg=erdpy_accounts&subdirectory=accounts
-git+https://git@github.com/ElrondNetwork/elrond-sdk-erdpy-eggs.git@init#egg=erdpy_network&subdirectory=network

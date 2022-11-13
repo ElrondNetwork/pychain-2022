@@ -1,0 +1,4 @@
+bottle
+gunicorn
+git+https://git@github.com/ElrondNetwork/sdk-erdpy-eggs-core.git@init#egg=erdpy_core
+git+https://git@github.com/ElrondNetwork/sdk-erdpy-eggs-network-providers.git@init#egg=erdpy_network

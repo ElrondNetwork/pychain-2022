@@ -52,37 +52,37 @@ def send_static(filename: Path):
 
 @app.route("/api/<network>/accounts/<address>/native")
 @handle_error
-def get_native_state(network: str, address: str):
+def get_native_balance(network: str, address: str):
     time, block_nonce = parse_query_parameters()
     provider = services.get_network_provider(network)
-    response = provider.get_native_state_of_account(address, time, block_nonce)
+    response = provider.get_native_balance(address, time, block_nonce)
     return response.to_dictionary()
 
 
 @app.route("/api/<network>/accounts/<address>/token/<token>")
 @handle_error
-def get_token_state(network: str, address: str, token: str):
+def get_token_balance(network: str, address: str, token: str):
     time, block_nonce = parse_query_parameters()
     provider = services.get_network_provider(network)
-    response = provider.get_token_state_of_account(address, token, time, block_nonce)
+    response = provider.get_token_balance(address, token, time, block_nonce)
     return response.to_dictionary()
 
 
-@app.route("/api/<network>/accounts/<address>/pairs")
+@app.route("/api/<network>/accounts/<address>/storage")
 @handle_error
-def get_pairs(network: str, address: str):
+def get_whole_storage(network: str, address: str):
     time, block_nonce = parse_query_parameters()
     provider = services.get_network_provider(network)
-    response = provider.get_pairs_of_account(address, time, block_nonce)
+    response = provider.get_whole_storage(address, time, block_nonce)
     return response.to_dictionary()
 
 
-@app.route("/api/<network>/accounts/<address>/pairs/<key>")
+@app.route("/api/<network>/accounts/<address>/storage/<key>")
 @handle_error
-def get_pair(network: str, address: str, key: str):
+def get_storage_entry(network: str, address: str, key: str):
     time, block_nonce = parse_query_parameters()
     provider = services.get_network_provider(network)
-    response = provider.get_pair_of_account(address, key, time, block_nonce)
+    response = provider.get_storage_entry(address, key, time, block_nonce)
     return response.to_dictionary()
 
 
