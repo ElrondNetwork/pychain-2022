@@ -1,3 +1,4 @@
+import json
 import sys
 from argparse import ArgumentParser
 from pathlib import Path
@@ -6,6 +7,35 @@ from typing import Any, List
 import nacl.secret
 import nacl.utils
 from erdpy_wallet import generate_pem_file
+
+from passwords_manager import io, ux
+
+
+class SecretEntry:
+    def __init__(self, label: str, username: str, password: str) -> None:
+        self.label = label
+        self.username = username
+        self.password = password
+
+    def encrypt(self, secret_key: bytes) -> bytes:
+        box = nacl.secret.SecretBox(secret_key)
+        data = self.serialize()
+        encrypted = box.encrypt(data)
+        return encrypted
+
+    def serialize(self):
+        return json.dumps(self.__dict__).encode("utf-8")
+
+    @classmethod
+    def decrypt(cls, encrypted: bytes, secret_key: bytes):
+        box = nacl.secret.SecretBox(secret_key)
+        data = box.decrypt(encrypted)
+        return cls.deserialize(data)
+
+    @classmethod
+    def deserialize(cls, serialized: bytes):
+        data = json.loads(serialized.decode("utf-8"))
+        return SecretEntry(data["label"], data["username"], data["password"])
 
 
 def main(cli_args: List[str]):
@@ -57,7 +87,22 @@ def init(args: Any):
 
 
 def add_entries(args: Any):
-    print("add entries")
+    entries = ask_entries()
+    secret_key = load_secret_key(args.secret)
+
+
+def ask_entries():
+    entries: List[SecretEntry] = []
+
+    while True:
+        if not ux.ask_confirm("Add new entry?"):
+            break
+        label = ux.ask_string("Label")
+        username = ux.ask_string("Username")
+        password = ux.ask_password("Password")
+
+        entry = SecretEntry(label, username, password)
+        entries.append(entry)
 
 
 def retrieve_entries(args: Any):
@@ -70,6 +115,11 @@ def update_entries(args: Any):
 
 def delete_entries(args: Any):
     print("delete entries")
+
+
+def load_secret_key(file: Path) -> bytes:
+    as_hex = io.read_text(file)
+    return bytes.fromhex(as_hex)
 
 
 if __name__ == "__main__":
