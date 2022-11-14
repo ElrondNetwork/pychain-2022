@@ -9,8 +9,9 @@ class SaveKeyValuesBuilder:
     def __init__(self) -> None:
         self.items: List[AccountKeyValue] = []
 
-    def add_items(self, items: List[AccountKeyValue]):
+    def add_items(self, items: List[AccountKeyValue]) -> 'SaveKeyValuesBuilder':
         self.items.extend(items)
+        return self
 
     def build(self) -> TransactionPayload:
         backing_builder = FunctionCallBuilder()

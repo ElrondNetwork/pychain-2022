@@ -22,29 +22,17 @@ def main(cli_args: List[str]):
     sub = subparsers.add_parser("init", help="initialize passwords manager")
     sub.set_defaults(func=init)
 
-    sub = subparsers.add_parser("add", help="create entries")
+    sub = subparsers.add_parser("upsert", help="insert or update entries")
     sub.add_argument("--secret", required=True)
     sub.add_argument("--wallet", required=True)
     sub.add_argument("--url", required=True)
-    sub.set_defaults(func=add_entries)
+    sub.set_defaults(func=upsert_entries)
 
     sub = subparsers.add_parser("get", help="retrieve entries")
     sub.add_argument("--secret", required=True)
     sub.add_argument("--address", required=True)
     sub.add_argument("--url", required=True)
     sub.set_defaults(func=retrieve_entries)
-
-    sub = subparsers.add_parser("update", help="update entries")
-    sub.add_argument("--secret", required=True)
-    sub.add_argument("--wallet", required=True)
-    sub.add_argument("--url", required=True)
-    sub.set_defaults(func=retrieve_entries)
-
-    sub = subparsers.add_parser("delete", help="delete entries")
-    sub.add_argument("--secret", required=True)
-    sub.add_argument("--wallet", required=True)
-    sub.add_argument("--url", required=True)
-    sub.set_defaults(func=delete_entries)
 
     parsed_args = parser.parse_args(cli_args)
 
@@ -67,8 +55,8 @@ def init(args: Any):
         return file.write(key.hex())
 
 
-def add_entries(args: Any):
-    entries = ask_add_entries()
+def upsert_entries(args: Any):
+    entries: List[SecretEntry] = ask_upsert_entries()
     if not entries:
         return
 
@@ -76,20 +64,20 @@ def add_entries(args: Any):
     pairs = [entry.to_key_value(secret_key) for entry in entries]
 
     signer = UserSigner.from_pem_file(Path(args.wallet))
-    provider = create_network_provider(args.url)
-    tx = create_transaction(signer, pairs, provider)
+    network_provider = create_network_provider(args.url)
+    tx = create_transaction(signer, network_provider, pairs)
 
-    if not ux.ask_confirm("Transaction is ready to be broadcasted, continue?"):
+    if not ux.ask_confirm_broadcast_transaction(tx):
         return
-    tx_hash = provider.send_transaction(tx)
+    tx_hash = network_provider.send_transaction(tx)
     print("Transaction hash", tx_hash)
 
 
-def ask_add_entries():
+def ask_upsert_entries():
     entries: List[SecretEntry] = []
 
     while True:
-        if not ux.ask_confirm("Add new entry?"):
+        if not ux.ask_confirm("Next entry?"):
             break
         label = ux.ask_string("Label")
         username = ux.ask_string("Username")
@@ -101,13 +89,11 @@ def ask_add_entries():
     return entries
 
 
-def create_transaction(signer: UserSigner, items: List[AccountKeyValue], provider: CustomNetworkProvider):
+def create_transaction(signer: UserSigner, network_provider: CustomNetworkProvider, items: List[AccountKeyValue]):
     address = signer.get_address()
-    chain_id = provider.get_chain_id()
-    nonce = provider.get_account_nonce(address)
-    data_builder = SaveKeyValuesBuilder()
-    data_builder.add_items(items)
-    data = data_builder.build()
+    chain_id = network_provider.get_chain_id()
+    nonce = network_provider.get_account_nonce(address)
+    data = SaveKeyValuesBuilder().add_items(items).build()
     gas_limit = compute_gas_limit(items, data.length())
 
     tx = Transaction(
@@ -141,41 +127,37 @@ def compute_gas_limit(items: List[AccountKeyValue], data_length: int):
 def retrieve_entries(args: Any):
     secret_key = load_secret_key(Path(args.secret))
     address = Address(args.address)
-    provider = create_network_provider(args.url)
-    pairs = provider.get_storage(address)
+    network_provider = create_network_provider(args.url)
+    pairs = network_provider.get_storage(address)
     entries = SecretEntry.load_many_from_storage(pairs, secret_key)
     ask_reveal_entries(entries)
 
 
 def ask_reveal_entries(entries: List[SecretEntry]):
-    print("Pick one of the following entries:")
+    entry = ask_choose_entry(entries)
+    ask_reveal_entry(entry)
+
+
+def ask_choose_entry(entries: List[SecretEntry]) -> SecretEntry:
+    print("Choose one of the following entries:")
 
     for index, entry in enumerate(entries):
         print(f"{index}) {entry.label}")
 
     index = ux.ask_number("Index:")
-    entry = entries[index]
-    ask_reveal_entry(entry)
+    return entries[index]
 
 
 def ask_reveal_entry(entry: SecretEntry):
     print(f"Username: {entry.username}")
     print("1) Reveal password")
-    print("2) Hold password to clipboard (for a limited time)")
+    print("2) Hold password in clipboard (for a limited time)")
     choice = ux.ask_number("Pick a choice!")
 
     if choice == 1:
         print(f"Password: {entry.password}")
     elif choice == 2:
         ux.hold_in_clipboard(entry.password)
-
-
-def update_entries(args: Any):
-    print("update entries")
-
-
-def delete_entries(args: Any):
-    print("delete entries")
 
 
 def create_network_provider(url: str):

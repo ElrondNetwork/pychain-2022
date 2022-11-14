@@ -1,6 +1,5 @@
 
 import json
-import uuid
 from typing import List
 
 import nacl.secret
@@ -18,9 +17,14 @@ class SecretEntry:
         self.password = password
 
     def to_key_value(self, secret_key: bytes) -> AccountKeyValue:
-        key = MARKER + uuid.uuid4().bytes
+        key = MARKER + self.encrypt_label(secret_key)
         value = self.encrypt(secret_key)
-        return AccountKeyValue(key, value)
+
+        if self.password:
+            return AccountKeyValue(key, value)
+
+        # Empty entry
+        return AccountKeyValue(key, bytes())
 
     def encrypt(self, secret_key: bytes) -> bytes:
         box = nacl.secret.SecretBox(secret_key)
@@ -28,18 +32,21 @@ class SecretEntry:
         encrypted = box.encrypt(data)
         return encrypted
 
+    def encrypt_label(self, secret_key: bytes) -> bytes:
+        box = nacl.secret.SecretBox(secret_key)
+        return box.encrypt(self.label.encode("utf-8"))
+
     def serialize(self):
         return json.dumps(self.__dict__).encode("utf-8")
 
     @classmethod
     def load_many_from_storage(cls, pairs: List[AccountKeyValue], secret_key: bytes) -> List['SecretEntry']:
-        entries: List[SecretEntry] = []
+        entries = [
+            SecretEntry.decrypt(pair.value, secret_key)
+            for pair in pairs if pair.key.startswith(MARKER)
+        ]
 
-        for pair in pairs:
-            if pair.key.startswith(MARKER):
-                entry = SecretEntry.decrypt(pair.value, secret_key)
-                entries.append(entry)
-
+        entries = sorted(entries, key=lambda entry: entry.label)
         return entries
 
     @classmethod

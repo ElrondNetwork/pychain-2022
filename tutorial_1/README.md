@@ -10,10 +10,16 @@ sudo apt install xclip
 
 ## How to run
 
-Add entries:
+Initialize password manager:
 
 ```
-python3 ./passwords_manager/main.py add --secret=./passwords_manager/testdata/secret.hex --wallet=./passwords_manager/testdata/wallet.pem --url=https://devnet-gateway.elrond.com
+python3 ./passwords_manager/main.py init
+```
+
+Insert or update entries:
+
+```
+python3 ./passwords_manager/main.py upsert --secret=./passwords_manager/testdata/secret.hex --wallet=./passwords_manager/testdata/wallet.pem --url=https://devnet-gateway.elrond.com
 ```
 
 Reveal entries:

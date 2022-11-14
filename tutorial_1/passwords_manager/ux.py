@@ -1,10 +1,24 @@
 import getpass
+import json
 from time import sleep
+from typing import Any, Dict, Protocol
 
 import pyperclip
 
 
-def ask_confirm(message: str):
+class ITransaction(Protocol):
+    def to_dictionary(self) -> Dict[str, Any]:
+        return dict()
+
+
+def ask_confirm_broadcast_transaction(tx: ITransaction) -> bool:
+    pretty = json.dumps(tx.to_dictionary(), indent=4)
+    print("Transaction:")
+    print(pretty)
+    return ask_confirm("Transaction is ready to be broadcasted, continue?")
+
+
+def ask_confirm(message: str) -> bool:
     answer = input(f"{message} (y/n)")
     return answer.lower() in ["y", "yes"]
 
