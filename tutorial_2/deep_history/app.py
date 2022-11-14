@@ -7,6 +7,7 @@ from bottle import static_file  # type: ignore
 from bottle import Bottle, request, response  # type: ignore
 from erdpy_network.errors import GenericError
 
+from deep_history.network_provider import CustomNetworkProvider
 from deep_history.services import Services
 
 FOLDER = Path(__file__).parent
@@ -33,8 +34,16 @@ def handle_error(func: Any):
 
 
 services = Services(
-    os.environ.get("MAINNET_GATEWAY", ""),
-    os.environ.get("DEVNET_GATEWAY", "")
+    mainnet_provider=CustomNetworkProvider(
+        url=os.environ.get("MAINNET_GATEWAY", ""),
+        username=os.environ.get("HTTP_BASIC_USERNAME_MAINNET"),
+        password=os.environ.get("HTTP_BASIC_PASSWORD_MAINNET")
+    ),
+    devnet_provider=CustomNetworkProvider(
+        url=os.environ.get("DEVNET_GATEWAY", ""),
+        username=os.environ.get("HTTP_BASIC_USERNAME_DEVNET"),
+        password=os.environ.get("HTTP_BASIC_PASSWORD_DEVNET")
+    )
 )
 
 app: Any = Bottle()
