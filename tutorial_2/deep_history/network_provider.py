@@ -55,10 +55,9 @@ class CustomNetworkProvider(ProxyNetworkProvider):
         round = self.get_round_by_time(time)
 
         for _ in range(0, MAX_NUM_BLOCKS_LOOKAHEAD):
-            blocks: List[Dict[str, Any]] = self.get_blocks_of_by_round(shard, round)
-            if blocks:
-                first_block = blocks[0]
-                return first_block
+            block = self.get_block_of_shard_by_round(shard, round)
+            if block:
+                return block
 
         raise Exception(f"Unexpected (rare) condition: no blocks at (or close after) ~{time}")
 
@@ -69,12 +68,11 @@ class CustomNetworkProvider(ProxyNetworkProvider):
         return shard
 
     @lru_cache(maxsize=64 * 1024)
-    def get_blocks_of_by_round(self, shard: int, round: int) -> List[Dict[str, Any]]:
+    def get_block_of_shard_by_round(self, shard: int, round: int) -> Union[Dict[str, Any], None]:
         # TODO: We should only cache responses if round < current round - (an arbitrary delta).
         response = self.do_get(f"blocks/by-round/{round}")
         blocks = response.get("blocks")
-        blocks_of_shard = [block for block in blocks if block.get("shard") == shard]
-        return blocks_of_shard
+        return next((block for block in blocks if block.get("shard") == shard), None)
 
     @lru_cache(maxsize=64 * 1024)
     def get_round_by_time(self, time: datetime.datetime):
