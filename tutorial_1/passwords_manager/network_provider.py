@@ -1,7 +1,9 @@
 from functools import lru_cache
-from typing import Any, Dict, Protocol
+from typing import Any, Dict, List, Protocol
 
 from erdpy_network import ProxyNetworkProvider
+
+from passwords_manager.account_key_value import AccountKeyValue
 
 
 class IAddress(Protocol):
@@ -29,9 +31,17 @@ class CustomNetworkProvider(ProxyNetworkProvider):
         tx_hash = str(response.get("txHash"))
         return tx_hash
 
-    def get_storage(self, address: IAddress):
+    def get_storage(self, address: IAddress) -> List[AccountKeyValue]:
         response = self.do_get(f"address/{address.bech32()}/keys")
-        return response
+        pairs_raw: Dict[str, str] = response.get("pairs")
+        pairs: List[AccountKeyValue] = []
+
+        for key, value in pairs_raw.items():
+            key_bytes = bytes.fromhex(key)
+            value_bytes = bytes.fromhex(value)
+            pairs.append(AccountKeyValue(key_bytes, value_bytes))
+
+        return pairs
 
     @lru_cache()
     def get_chain_id(self):
