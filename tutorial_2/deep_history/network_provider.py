@@ -4,13 +4,14 @@ from functools import lru_cache
 from typing import Any, Dict, List, Union
 
 from erdpy_network import ProxyNetworkProvider
+from requests.auth import HTTPBasicAuth
 
 MAX_NUM_BLOCKS_LOOKAHEAD = 64
 
 
 class CustomNetworkProvider(ProxyNetworkProvider):
-    def __init__(self, url: str) -> None:
-        super().__init__(url)
+    def __init__(self, url: str, username: Union[str, None] = None, password: Union[str, None] = None) -> None:
+        super().__init__(url, auth=HTTPBasicAuth(username, password))
 
     @lru_cache(maxsize=1024)
     def get_native_balance(self, address: str, time: Union[datetime.datetime, None], block_nonce: Union[int, None]):

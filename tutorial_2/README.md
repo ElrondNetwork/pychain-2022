@@ -19,8 +19,12 @@ If using VSCode, restart it or follow these steps:
 ## Start using gunicorn
 
 ```
-export MAINNET_GATEWAY=http://r620:8080
-export DEVNET_GATEWAY=http://r620:9090
+export HTTP_BASIC_USERNAME_MAINNET="pychain"
+export HTTP_BASIC_PASSWORD_MAINNET=""
+export HTTP_BASIC_USERNAME_DEVNET="pychain"
+export HTTP_BASIC_PASSWORD_DEVNET=""
+export MAINNET_GATEWAY=https://deep-history.elrond.com:4443/mainnet-gateway
+export DEVNET_GATEWAY=https://deep-history.elrond.com:4443/devnet-gateway
 gunicorn --workers=2 --bind=0.0.0.0:30000 "deep_history.app:app" --capture-output --access-logfile '-' --error-logfile '-'
 ```
 
@@ -29,11 +33,11 @@ gunicorn --workers=2 --bind=0.0.0.0:30000 "deep_history.app:app" --capture-outpu
 Build Docker image:
 
 ```
-docker image build . -t deep-history-dashboard:latest -f ./deep-history-dashboard.dockerfile
+docker image build . -t deep-history-dashboard:latest -f ./Dockerfile
 ```
 
 Start project:
 
 ```
-DOCKER_USER=$(id -u):$(id -g) docker compose --file ./deep-history-dashboard-compose.yml --project-name deep-history-dashboard up --detach
+DOCKER_USER=$(id -u):$(id -g) docker compose --file ./docker-compose.yml --project-name deep-history-dashboard up --detach
 ```
