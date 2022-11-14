@@ -1,4 +1,7 @@
 import getpass
+from time import sleep
+
+import pyperclip
 
 
 def ask_confirm(message: str):
@@ -20,3 +23,9 @@ def ask_password(message: str):
     password = getpass.getpass(f"{message}: ")
     print(f"Entered password of length {len(password)}")
     return password
+
+
+def hold_in_clipboard(data: str, seconds: int = 10):
+    pyperclip.copy(data)
+    sleep(seconds)
+    pyperclip.copy("")

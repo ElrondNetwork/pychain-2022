@@ -5,7 +5,7 @@ from typing import Any, List
 
 import nacl.secret
 import nacl.utils
-from erdpy_core import Transaction
+from erdpy_core import Address, Transaction
 from erdpy_wallet import UserSigner, generate_pem_file
 
 from passwords_manager import io, ux
@@ -68,14 +68,24 @@ def init(args: Any):
 
 
 def add_entries(args: Any):
-    entries = ask_entries()
+    entries = ask_add_entries()
+    if not entries:
+        return
+
     secret_key = load_secret_key(Path(args.secret))
+    pairs = [entry.to_key_value(secret_key) for entry in entries]
+
     signer = UserSigner.from_pem_file(Path(args.wallet))
     provider = create_network_provider(args.url)
-    tx = create_transaction(signer, [], provider)
+    tx = create_transaction(signer, pairs, provider)
+
+    if not ux.ask_confirm("Transaction is ready to be broadcasted, continue?"):
+        return
+    tx_hash = provider.send_transaction(tx)
+    print("Transaction hash", tx_hash)
 
 
-def ask_entries():
+def ask_add_entries():
     entries: List[SecretEntry] = []
 
     while True:
@@ -87,6 +97,8 @@ def ask_entries():
 
         entry = SecretEntry(label, username, password)
         entries.append(entry)
+
+    return entries
 
 
 def create_transaction(signer: UserSigner, items: List[AccountKeyValue], provider: CustomNetworkProvider):
@@ -108,6 +120,7 @@ def create_transaction(signer: UserSigner, items: List[AccountKeyValue], provide
     )
 
     tx.apply_signature(signer.sign(tx))
+    return tx
 
 
 def compute_gas_limit(items: List[AccountKeyValue], data_length: int):
@@ -118,19 +131,43 @@ def compute_gas_limit(items: List[AccountKeyValue], data_length: int):
     gas_limit += 1500 * data_length
 
     for item in items:
-        gas_limit += 10000 * len(item.key)
+        gas_limit += 1000 * len(item.key)
+        gas_limit += 1000 * len(item.value)
         gas_limit += 10000 * len(item.value)
-        gas_limit += 50000 * len(item.value)
 
     return gas_limit
 
 
-def broadcast_transaction():
-    pass
-
-
 def retrieve_entries(args: Any):
-    print("retrieve entries")
+    secret_key = load_secret_key(Path(args.secret))
+    address = Address(args.address)
+    provider = create_network_provider(args.url)
+    pairs = provider.get_storage(address)
+    entries = SecretEntry.load_many_from_storage(pairs, secret_key)
+    ask_reveal_entries(entries)
+
+
+def ask_reveal_entries(entries: List[SecretEntry]):
+    print("Pick one of the following entries:")
+
+    for index, entry in enumerate(entries):
+        print(f"{index}) {entry.label}")
+
+    index = ux.ask_number("Index:")
+    entry = entries[index]
+    ask_reveal_entry(entry)
+
+
+def ask_reveal_entry(entry: SecretEntry):
+    print(f"Username: {entry.username}")
+    print("1) Reveal password")
+    print("2) Hold password to clipboard (for a limited time)")
+    choice = ux.ask_number("Pick a choice!")
+
+    if choice == 1:
+        print(f"Password: {entry.password}")
+    elif choice == 2:
+        ux.hold_in_clipboard(entry.password)
 
 
 def update_entries(args: Any):
@@ -148,10 +185,6 @@ def create_network_provider(url: str):
 def load_secret_key(file: Path) -> bytes:
     as_hex = io.read_text(file)
     return bytes.fromhex(as_hex)
-
-
-def acquire_nonce():
-    pass
 
 
 if __name__ == "__main__":
