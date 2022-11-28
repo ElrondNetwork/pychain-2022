@@ -2,3 +2,4 @@
 
 [Introduction to MultiversX blockchain development with Python.](https://www.pychain.org/session/introduction-to-elrond-blockchain-development-with-python)
 
+Slides can be found [here](Slides.pdf).
