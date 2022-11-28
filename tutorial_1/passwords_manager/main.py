@@ -6,7 +6,7 @@ from typing import Any, List
 import nacl.secret
 import nacl.utils
 from erdpy_core import Address, Transaction
-from erdpy_wallet import UserSigner, generate_pem_file
+from erdpy_wallet import UserSigner, generate_user_pem_file
 
 from passwords_manager import io, ux
 from passwords_manager.account_key_value import AccountKeyValue
@@ -47,7 +47,7 @@ def init(args: Any):
     path_of_secret = Path("secret.hex")
 
     # Generate wallet (to sign transactions)
-    generate_pem_file(path_of_wallet)
+    generate_user_pem_file(path_of_wallet)
 
     # Generate secret (for pynacl's SecretBox)
     key = nacl.utils.random(nacl.secret.SecretBox.KEY_SIZE)
@@ -126,7 +126,7 @@ def compute_gas_limit(items: List[AccountKeyValue], data_length: int):
 
 def retrieve_entries(args: Any):
     secret_key = load_secret_key(Path(args.secret))
-    address = Address(args.address)
+    address = Address.from_bech32(args.address)
     network_provider = create_network_provider(args.url)
     pairs = network_provider.get_storage(address)
     entries = SecretEntry.load_many_from_storage(pairs, secret_key)
