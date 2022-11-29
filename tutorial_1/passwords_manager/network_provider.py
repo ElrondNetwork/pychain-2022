@@ -21,18 +21,12 @@ class CustomNetworkProvider(ProxyNetworkProvider):
         super().__init__(url)
 
     def get_account_nonce(self, address: IAddress) -> int:
-        response = self.do_get(f"address/{address.bech32()}")
+        response = self.do_get_generic(f"address/{address.bech32()}")
         nonce = response.get("account").get("nonce", 0)
         return int(nonce)
 
-    def send_transaction(self, transaction: ITransaction) -> str:
-        payload = transaction.to_dictionary()
-        response = self.do_post("transaction/send", payload)
-        tx_hash = str(response.get("txHash"))
-        return tx_hash
-
     def get_storage(self, address: IAddress) -> List[AccountKeyValue]:
-        response = self.do_get(f"address/{address.bech32()}/keys")
+        response = self.do_get_generic(f"address/{address.bech32()}/keys")
         pairs_raw: Dict[str, str] = response.get("pairs")
         pairs: List[AccountKeyValue] = []
 
@@ -44,9 +38,5 @@ class CustomNetworkProvider(ProxyNetworkProvider):
         return pairs
 
     @lru_cache()
-    def get_chain_id(self):
-        return self.get_network_config().get("erd_chain_id")
-
-    @lru_cache()
-    def get_network_config(self):
-        return self.do_get("network/config").get("config")
+    def get_chain_id(self) -> str:
+        return self.get_network_config().chain_id
