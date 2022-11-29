@@ -1,9 +1,10 @@
 import datetime
 import time
 from functools import lru_cache
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, Union
 
 from erdpy_network import ProxyNetworkProvider
+from erdpy_network.resources import GenericResponse
 from requests.auth import HTTPBasicAuth
 
 MAX_NUM_BLOCKS_LOOKAHEAD = 64
@@ -18,28 +19,28 @@ class CustomNetworkProvider(ProxyNetworkProvider):
         block_nonce = self.decide_block_nonce(address, time, block_nonce)
         block_nonce_query_part = "" if not block_nonce else f"blockNonce={block_nonce}"
         url = f"address/{address}?{block_nonce_query_part}"
-        response = self.do_get(url)
+        response = self.do_get_generic(url)
         return response
 
     @lru_cache(maxsize=1024)
     def get_token_balance(self, address: str, token: str, time: Union[datetime.datetime, None], block_nonce: Union[int, None]):
         block_nonce = self.decide_block_nonce(address, time, block_nonce)
         block_nonce_query_part = "" if not block_nonce else f"blockNonce={block_nonce}"
-        response = self.do_get(f"address/{address}/esdt/{token}?{block_nonce_query_part}")
+        response = self.do_get_generic(f"address/{address}/esdt/{token}?{block_nonce_query_part}")
         return response
 
     @lru_cache(maxsize=1024)
     def get_whole_storage(self, address: str, time: Union[datetime.datetime, None], block_nonce: Union[int, None]):
         block_nonce = self.decide_block_nonce(address, time, block_nonce)
         block_nonce_query_part = "" if not block_nonce else f"blockNonce={block_nonce}"
-        response = self.do_get(f"address/{address}/keys?{block_nonce_query_part}")
+        response = self.do_get_generic(f"address/{address}/keys?{block_nonce_query_part}")
         return response
 
     @lru_cache(maxsize=1024)
     def get_storage_entry(self, address: str, key: str, time: Union[datetime.datetime, None], block_nonce: Union[int, None]):
         block_nonce = self.decide_block_nonce(address, time, block_nonce)
         block_nonce_query_part = "" if not block_nonce else f"blockNonce={block_nonce}"
-        response = self.do_get(f"address/{address}/key/{key}?{block_nonce_query_part}")
+        response = self.do_get_generic(f"address/{address}/key/{key}?{block_nonce_query_part}")
         return response
 
     def decide_block_nonce(self, address: str, time: Union[datetime.datetime, None], block_nonce: Union[int, None]):
@@ -63,14 +64,14 @@ class CustomNetworkProvider(ProxyNetworkProvider):
 
     @lru_cache(maxsize=64 * 1024)
     def get_shard_of_address(self, address: str) -> int:
-        response = self.do_get(f"address/{address}/shard")
+        response = self.do_get_generic(f"address/{address}/shard")
         shard = response.get("shardID")
         return shard
 
     @lru_cache(maxsize=64 * 1024)
     def get_block_of_shard_by_round(self, shard: int, round: int) -> Union[Dict[str, Any], None]:
         # TODO: We should only cache responses if round < current round - (an arbitrary delta).
-        response = self.do_get(f"blocks/by-round/{round}")
+        response = self.do_get_generic(f"blocks/by-round/{round}")
         blocks = response.get("blocks")
         return next((block for block in blocks if block.get("shard") == shard), None)
 
@@ -83,24 +84,24 @@ class CustomNetworkProvider(ProxyNetworkProvider):
 
     @lru_cache()
     def get_genesis_time(self):
-        network_config = self.get_network_config()
+        network_config = self._get_network_config()
         erd_start_time = network_config.get("erd_start_time")
         genesis_time = datetime.datetime.utcfromtimestamp(erd_start_time)
         return genesis_time
 
     @lru_cache()
     def get_round_duration(self) -> float:
-        network_config = self.get_network_config()
+        network_config = self._get_network_config()
         erd_round_duration = network_config.get("erd_round_duration")
         return erd_round_duration / 1000
 
     @lru_cache()
-    def get_network_config(self):
-        return self.do_get("network/config").get("config")
+    def _get_network_config(self):
+        return self.do_get_generic("network/config").get("config")
 
-    def do_get(self, url: str):
+    def do_get_generic(self, resource_url: str) -> GenericResponse:
         start = time.time()
-        response = super().do_get(url)
+        response = super().do_get_generic(resource_url)
         end = time.time()
-        print(f"> GET {url}, duration = {end - start}")
+        print(f"> GET {resource_url}, duration = {end - start}")
         return response

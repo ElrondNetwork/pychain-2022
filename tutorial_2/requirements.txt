@@ -2,4 +2,4 @@ bottle
 gunicorn
 requests==2.24.0
 git+https://git@github.com/ElrondNetwork/sdk-erdpy-eggs-core.git@v0.1.0#egg=erdpy_core
-git+https://git@github.com/ElrondNetwork/sdk-erdpy-eggs-network-providers.git@init#egg=erdpy_network
+git+https://git@github.com/ElrondNetwork/sdk-erdpy-eggs-network-providers.git@v0.1.1#egg=erdpy_network
