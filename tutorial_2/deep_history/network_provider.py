@@ -4,6 +4,7 @@ from functools import lru_cache
 from typing import Any, Dict, Union
 
 from erdpy_network import ProxyNetworkProvider
+from erdpy_network.network_config import NetworkConfig
 from erdpy_network.resources import GenericResponse
 from requests.auth import HTTPBasicAuth
 
@@ -84,20 +85,18 @@ class CustomNetworkProvider(ProxyNetworkProvider):
 
     @lru_cache()
     def get_genesis_time(self):
-        network_config = self._get_network_config()
-        erd_start_time = network_config.get("erd_start_time")
-        genesis_time = datetime.datetime.utcfromtimestamp(erd_start_time)
+        genesis_timestamp = self.cached_get_network_config().start_time
+        genesis_time = datetime.datetime.utcfromtimestamp(genesis_timestamp)
         return genesis_time
 
     @lru_cache()
     def get_round_duration(self) -> float:
-        network_config = self._get_network_config()
-        erd_round_duration = network_config.get("erd_round_duration")
-        return erd_round_duration / 1000
+        round_duration = self.cached_get_network_config().round_duration
+        return round_duration / 1000
 
     @lru_cache()
-    def _get_network_config(self):
-        return self.do_get_generic("network/config").get("config")
+    def cached_get_network_config(self) -> NetworkConfig:
+        return self.get_network_config()
 
     def do_get_generic(self, resource_url: str) -> GenericResponse:
         start = time.time()

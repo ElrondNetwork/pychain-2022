@@ -23,8 +23,8 @@ export HTTP_BASIC_USERNAME_MAINNET="pychain"
 export HTTP_BASIC_PASSWORD_MAINNET=""
 export HTTP_BASIC_USERNAME_DEVNET="pychain"
 export HTTP_BASIC_PASSWORD_DEVNET=""
-export MAINNET_GATEWAY=https://deep-history.elrond.com:4443/mainnet-gateway
-export DEVNET_GATEWAY=https://deep-history.elrond.com:4443/devnet-gateway
+export MAINNET_GATEWAY=https://deep-history.multiversx.com:4443/mainnet-gateway
+export DEVNET_GATEWAY=https://deep-history.multiversx.com:4443/devnet-gateway
 gunicorn --workers=2 --bind=0.0.0.0:30000 "deep_history.app:app" --capture-output --access-logfile '-' --error-logfile '-'
 ```
 

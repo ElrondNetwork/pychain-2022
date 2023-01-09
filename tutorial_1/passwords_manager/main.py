@@ -111,7 +111,7 @@ def create_transaction(signer: UserSigner, network_provider: CustomNetworkProvid
 
 def compute_gas_limit(items: List[AccountKeyValue], data_length: int):
     """
-    See: https://docs.elrond.com/developers/account-storage/
+    See: https://docs.multiversx.com/developers/account-storage/
     """
     gas_limit = 250000 + 50000
     gas_limit += 1500 * data_length
